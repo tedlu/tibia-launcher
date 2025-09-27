@@ -2,10 +2,14 @@
 <img width="699" height="577" alt="image" src="https://github.com/user-attachments/assets/fcb2f7de-9745-4023-ab03-9a520065b7ae" />
 
 
+# 🎮 Tibia Launcher -- **📱 Modern Interface**: Beautiful PySide6/Qt GUI with real-time progress tracking
+- **🔄 Self-Updating Launcher**: Launcher automatically updates itself when new versions available
+- **🗺️ Minimap Downloads**: Built-in minimap downloader with multiple options
+- **📊 Version Tracking**: Enhanced semantic versioning with clear status indicators
+- **💻 Thread-Safe Design**: Modern Qt architecture prevents freezing during downloads
+- **🐍 Python-Powered**: Written in Python 3.12+ for easy customization and cross-platform supportlete Setup Guide
 
-# 🎮 Tibia Launcher - Complete Setup Guide
-
-A modern, easy-to-configure launcher for Tibia private servers with automatic updates and a beautiful PySide6 interface.
+A modern, easy-to-configure launcher for Tibia private servers built with **Python** and **PySide6**, featuring automatic updates and a beautiful Qt-based interface.
 
 ## 📋 Table of Contents
 
@@ -106,6 +110,7 @@ A modern, easy-to-configure launcher for Tibia private servers with automatic up
 ### System Requirements
 
 - **Windows 10/11** (64-bit recommended)  
+- **Python 3.12+** (for development only - not needed for built executables)
 - **2GB free space** for game client
 - **Internet connection** for downloads
 
@@ -145,6 +150,14 @@ A modern, easy-to-configure launcher for Tibia private servers with automatic up
 ---
 
 ## ⚙️ Configuration Guide (For Developers)
+
+### Technology Stack
+
+- **Language**: Python 3.12+
+- **GUI Framework**: PySide6 (Qt for Python)
+- **Key Libraries**: requests, pathlib, threading
+- **Build Tool**: PyInstaller
+- **Architecture**: Modern Qt signal-slot system with thread-safe design
 
 ### Setting Up Development Environment
 
@@ -377,5 +390,6 @@ This project is open source - feel free to modify and distribute!
 
 ---
 
-
 **🎮 Ready to launch your Tibia server? Get started with the easy config above!**
+**🎮 Ready to launch your Tibia server? Get started with the easy config above!**
+
