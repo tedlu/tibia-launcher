@@ -1,0 +1,32 @@
+VSVersionInfo(
+  ffi=FixedFileInfo(
+    filevers=(1, 1, 0, 0),
+    prodvers=(1, 1, 0, 0),
+    mask=0x3f,
+    flags=0x0,
+    OS=0x40004,
+    fileType=0x1,
+    subtype=0x0,
+    date=(0, 0)
+  ),
+  kids=[
+    StringFileInfo([
+      StringTable(
+        u'040904b0',
+        [
+          StringStruct(u'CompanyName', u'YourServerName'),
+          StringStruct(u'FileDescription', u'Tibia Launcher'),
+          StringStruct(u'FileVersion', u'1.1.0.0'),
+          StringStruct(u'InternalName', u'tibialauncher'),
+          StringStruct(u'OriginalFilename', u'tibialauncher.exe'),
+          StringStruct(u'ProductName', u'Tibia Launcher'),
+          StringStruct(u'ProductVersion', u'1.1.0.0'),
+          StringStruct(u'LegalCopyright', u'Copyright (C) 2025 YourServerName')
+        ]
+      )
+    ]),
+    VarFileInfo([
+      VarStruct(u'Translation', [0x0409, 1200])
+    ])
+  ]
+)
