@@ -1,3 +1,8 @@
+
+<img width="699" height="577" alt="image" src="https://github.com/user-attachments/assets/fcb2f7de-9745-4023-ab03-9a520065b7ae" />
+
+
+
 # 🎮 Tibia Launcher - Complete Setup Guide
 
 A modern, easy-to-configure launcher for Tibia private servers with automatic updates and a beautiful PySide6 interface.
@@ -371,5 +376,6 @@ tibialauncher/
 This project is open source - feel free to modify and distribute!
 
 ---
+
 
 **🎮 Ready to launch your Tibia server? Get started with the easy config above!**
