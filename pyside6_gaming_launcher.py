@@ -28,7 +28,12 @@ def shadow(radius=32, color=(0, 0, 0, 160), offset=(0, 12)):
 from PySide6.QtCore import Qt, QTimer, QThread, Signal, QPropertyAnimation, QEasingCurve, QObject
 from PySide6.QtGui import QPixmap, QFont, QPalette, QColor, QIcon, QBrush, QPainter, QPen, QPainterPath
 
-from launcher_core import LauncherCore
+try:
+    # Prefer packaged path
+    from tibialauncher.core.launcher_core import LauncherCore
+except Exception:
+    # Fallback for dev if package path not available
+    from launcher_core import LauncherCore
 
 
 def resource_path(*parts: str) -> str:

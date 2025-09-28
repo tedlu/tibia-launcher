@@ -1,0 +1,1 @@
+# Tibia Launcher package root

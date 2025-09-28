@@ -1,0 +1,33 @@
+{
+    "server_name": "Example Tibia Server",
+    "current_version": "1.0.0",
+    "description": "Latest game client - New monsters, quests, and balance changes!",
+    
+    "github_username": "example-user",
+    "github_repository": "tibia-client", 
+    "client_zip_filename": "tibia-client.zip",
+    "auto_install_updates": false,
+    
+    "enable_auto_update": true,
+    "auto_install_launcher_updates": false,
+    "launcher_github_username": "example-user",
+    "launcher_github_repository": "tibialauncher",
+    "current_launcher_version": "2.0.0",
+    
+    "protected_folders": [
+        "minimap",
+        "conf", 
+        "characterdata",
+        "screenshots"
+    ],
+    
+    "enable_minimap_downloads": true,
+    "custom_minimaps": {
+        "Full World Map": "https://github.com/example-user/tibia-client/releases/download/maps/worldmap.zip",
+        "PvP Areas": "https://github.com/example-user/tibia-client/releases/download/maps/pvp.zip"
+    },
+    
+    "check_for_updates_on_startup": true,
+    "show_changelog": true,
+    "backup_before_update": true
+}

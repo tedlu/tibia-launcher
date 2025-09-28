@@ -1,0 +1,54 @@
+{
+    "_comment": "🎮 Tibia Launcher Configuration Template (Enhanced)",
+    "_instructions": [
+        "📝 QUICK SETUP (New Easy Format):",
+        "1. Replace YOUR_USERNAME and YOUR_REPOSITORY with your GitHub info",
+        "2. Set your server name and current version",
+        "3. Save as 'launcher_config.json' in your GitHub repository root",
+        "4. The launcher will automatically download from your GitHub releases!",
+        "",
+        "🔧 ADVANCED: You can also use the old format below for backward compatibility"
+    ],
+    
+    "🌟 EASY SETUP - Just fill these in": "👇👇👇",
+    "server_name": "YOUR_SERVER_NAME",
+    "current_version": "1.0.0", 
+    "description": "Latest game client with awesome new features!",
+    "github_username": "YOUR_USERNAME",
+    "github_repository": "YOUR_REPOSITORY",
+    "client_zip_filename": "tibia-client.zip",
+    "auto_install_updates": false,
+    
+    "🔄 AUTO-UPDATE LAUNCHER": "Enable this for automatic launcher updates",
+    "enable_auto_update": true,
+    "auto_install_launcher_updates": false,
+    "launcher_github_username": "YOUR_USERNAME",
+    "launcher_github_repository": "tibialauncher",
+    "current_launcher_version": "2.0.0",
+    
+    "🛡️ PROTECTED FOLDERS": "These folders won't be deleted during updates",
+    "protected_folders": [
+        "minimap",
+        "conf", 
+        "characterdata",
+        "screenshots"
+    ],
+    
+    "🗺️ CUSTOM MINIMAPS": "Optional minimap downloads",
+    "enable_minimap_downloads": true,
+    "custom_minimaps": {
+        "World Map": "https://github.com/YOUR_USERNAME/YOUR_REPOSITORY/releases/download/maps/worldmap.zip"
+    },
+    
+    "📋 BACKWARD COMPATIBILITY": "Old format still works",
+    "_legacy_note": "The fields below are for backward compatibility with older launchers",
+    "version": "1.0",
+    "download_link": "https://github.com/YOUR_USERNAME/YOUR_REPOSITORY/releases/download/v1.0/tibia-client.zip",
+    "release_tag": "v1.0", 
+    "zip_file": "tibia-client.zip",
+    
+    "⚙️ ADVANCED OPTIONS": "You probably don't need to change these",
+    "check_for_updates_on_startup": true,
+    "show_changelog": true,
+    "backup_before_update": true
+}

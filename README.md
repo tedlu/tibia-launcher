@@ -7,7 +7,7 @@
 - **🗺️ Minimap Downloads**: Built-in minimap downloader with multiple options
 - **📊 Version Tracking**: Enhanced semantic versioning with clear status indicators
 - **💻 Thread-Safe Design**: Modern Qt architecture prevents freezing during downloads
-- **🐍 Python-Powered**: Written in Python 3.12+ for easy customization and cross-platform supportlete Setup Guide
+- **🐍 Python-Powered**: Written in Python 3.12+ for easy customization and cross-platform support
 
 A modern, easy-to-configure launcher for Tibia private servers built with **Python** and **PySide6**, featuring automatic updates and a beautiful Qt-based interface.
 
@@ -31,7 +31,7 @@ A modern, easy-to-configure launcher for Tibia private servers built with **Pyth
 - **📱 Modern Interface**: Beautiful PySide6 GUI with real-time progress tracking
 - **🔄 Self-Updating Launcher**: Launcher automatically updates itself when new versions available
 - **🗺️ Minimap Downloads**: Built-in minimap downloader with multiple options
-- **� Version Tracking**: Enhanced semantic versioning with clear status indicators
+- **📊 Version Tracking**: Enhanced semantic versioning with clear status indicators
 - **💻 Thread-Safe Design**: Modern Qt architecture prevents freezing during downloads
 
 ---
@@ -269,9 +269,9 @@ The launcher supports both simple and advanced configuration formats:
 
 ```bash
 # Single file executable (recommended)
-pyinstaller tibialauncher.spec
+pyinstaller tibialauncher_onefile.spec
 
-# Directory distribution
+# Directory distribution (dev/testing)
 pyinstaller --onedir --windowed --icon=images/appicon.ico pyside6_gaming_launcher.py
 ```
 
@@ -333,19 +333,26 @@ Set `TIBIA_DEBUG=true` environment variable for detailed logging.
 ## 📄 File Structure
 
 ```
-tibialauncher/
-├── pyside6_gaming_launcher.py   # Main GUI application
-├── launcher_core.py             # Core download/update logic
-├── github_downloader.py         # GitHub API integration
-├── file_manager.py              # File operations
-├── tibialauncher.spec           # PyInstaller build config
-├── requirements.txt             # Python dependencies
-├── build.bat                    # Quick build script
-├── easy_config_template.json    # Config template for users
-└── images/                      # Launcher graphics
-    ├── tibia_ot_logo.png       # Main logo
-    ├── background-artwork.png   # Background image
-    └── appicon.ico             # Application icon
+.
+├── pyside6_gaming_launcher.py     # Main GUI application
+├── launcher_core.py               # Back-compat shim → re-exports from tibialauncher.core
+├── tibialauncher_onefile.spec     # PyInstaller build config (onefile)
+├── requirements.txt               # Python dependencies
+├── build.bat / setup.bat          # Build/setup scripts
+├── sign-exe.ps1                   # Optional code signing helper
+├── tibialauncher/                 # Python package
+│   ├── __init__.py
+│   └── core/
+│       ├── launcher_core.py       # Core download/update/self-update logic
+│       ├── github_downloader.py   # GitHub API + config retrieval
+│       └── file_manager.py        # File/backup/extraction utilities
+├── config/                        # Config templates/examples
+│   ├── launcher_config_template.json
+│   └── launcher_config_example.json
+└── images/                        # Launcher graphics
+   ├── tibia_ot_logo.png          # Main logo
+   ├── background-artwork.png     # Background image
+   └── appicon.ico                # Application icon
 ```
 
 ---
@@ -354,15 +361,20 @@ tibialauncher/
 
 ### What to Include in Your Repository
 ```
-tibialauncher/
-├── *.py files                      # Source code
-├── requirements.txt                # Dependencies  
-├── README.md                       # Documentation
-├── .gitignore                      # Excludes unnecessary files
-├── build.bat / setup.bat           # Build scripts
-├── tibialauncher_onefile.spec      # PyInstaller config
-├── launcher_config_template.json   # Config template
-└── images/                         # Icons and graphics
+.
+├── pyside6_gaming_launcher.py
+├── launcher_core.py                        # Back-compat shim
+├── tibialauncher/                          # Organized package
+│   └── core/ (launcher_core.py, github_downloader.py, file_manager.py)
+├── config/                                 # Templates/examples for remote config
+│   ├── launcher_config_template.json
+│   └── launcher_config_example.json
+├── images/
+├── requirements.txt
+├── build.bat / setup.bat
+├── sign-exe.ps1
+├── tibialauncher_onefile.spec
+└── README.md
 ```
 
 ### What NOT to Include (.gitignore excludes)

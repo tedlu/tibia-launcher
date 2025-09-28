@@ -13,16 +13,16 @@ Notes:
 import os
 from PyInstaller.utils.hooks import collect_submodules
 
-APP_NAME = "lunarialauncher"
+APP_NAME = "tibialauncher"
 ENTRY_SCRIPT = "pyside6_gaming_launcher.py"
 ICON_PATH = "images/appicon.ico" if os.path.exists("images/appicon.ico") else None
 
 hidden_imports = collect_submodules('PySide6')
 
 datas = [
-    ('images/*.png', 'images'),
-    ('images/*.ico', 'images'),
-    ('sample_launcher_config', '.'),
+  ('images/*.png', 'images'),
+  ('images/*.ico', 'images'),
+  ('config/*', 'config'),
 ]
 
 block_cipher = None
@@ -31,8 +31,8 @@ a = Analysis(
     [ENTRY_SCRIPT],
     pathex=[],
     binaries=[],
-    datas=datas,
-    hiddenimports=hidden_imports,
+  datas=datas,
+  hiddenimports=hidden_imports + ['tibialauncher', 'tibialauncher.core', 'tibialauncher.core.launcher_core', 'tibialauncher.core.github_downloader', 'tibialauncher.core.file_manager'],
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
