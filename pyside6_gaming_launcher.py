@@ -741,25 +741,56 @@ QTextEdit#log_text {
                 if not silent:
                     self.log_message(f"📋 Current version: {current_version}")
 
+                # Optional auto-install behavior from remote config
+                auto_install = False
+                try:
+                    cfg = self.launcher_core.get_remote_config()
+                    val = (cfg or {}).get('auto_install_updates')
+                    if isinstance(val, bool):
+                        auto_install = val
+                    elif isinstance(val, str):
+                        auto_install = val.strip().lower() in ("1", "true", "yes", "on")
+                except Exception:
+                    auto_install = False
+
                 latest_info = self.launcher_core.get_latest_release_info()
                 if latest_info:
                     latest_version = latest_info.get('version') or latest_info.get('tag_name') or latest_info.get('name') or ''
                     # Normalize leading v
                     if latest_version.lower().startswith('v') and latest_version[1:2].isdigit():
                         latest_version = latest_version[1:]
-                    
+
                     if not silent:
                         self.log_message(f"🌐 Latest version: {latest_version or 'Unknown'}")
 
-                    if latest_version and current_version != latest_version:
+                    # Decide if update is needed
+                    needs_update = False
+                    if latest_version:
+                        if current_version == "Not installed":
+                            needs_update = True
+                        else:
+                            try:
+                                needs_update = self.launcher_core._compare_versions(current_version, latest_version) < 0
+                            except Exception:
+                                needs_update = (current_version != latest_version)
+
+                    if latest_version and needs_update:
                         # Update available - make it prominent
                         self.update_status("🔄 Update available!")
                         self.log_message("🎉 New Tibia update available for download!")
-                        
-                        # Emit signal to show update prompt on main thread
-                        if not silent:
+
+                        # Automatically start download if not installed
+                        if current_version == "Not installed":
+                            self.log_message("📦 Tibia is not installed. Starting automatic download...")
+                            self.download_and_install()
+                        # If installed and auto_install is enabled, start automatically
+                        elif auto_install:
+                            self.log_message("⚙️ Auto-install enabled via config. Starting update...")
+                            self.download_and_install()
+                        # Otherwise, prompt user as before
+                        elif not silent:
                             self.update_available_signal.emit(current_version, latest_version)
-                        
+
                     elif latest_version:
                         self.update_status("✅ Up to date")
                         if not silent:
@@ -776,7 +807,6 @@ QTextEdit#log_text {
                 self.update_status("⚠️ Update check error")
                 if not silent:
                     self.log_message(f"⚠️ Error checking updates: {str(e)}")
-        
         # Run in thread to avoid blocking UI
         thread = threading.Thread(target=check_updates, daemon=True)
         thread.start()
@@ -1010,6 +1040,38 @@ QTextEdit#log_text {
         protected_layout.addWidget(protected_info)
         
         layout.addWidget(protected_group)
+        
+        # --- Tibia Update section ---
+        update_group = QGroupBox("Tibia Update")
+        update_layout = QVBoxLayout(update_group)
+        update_info = QLabel("Check for the latest Tibia client and install updates.")
+        update_info.setWordWrap(True)
+        update_layout.addWidget(update_info)
+
+        check_update_btn = QPushButton("🔄 Check for Tibia Update")
+        def do_manual_update():
+            try:
+                status = self.launcher_core.check_tibia_version_status()
+                cur = status.get('current_version', 'Unknown')
+                latest = status.get('latest_version', 'Unknown')
+                if status.get('update_available'):
+                    reply = QMessageBox.question(
+                        dialog,
+                        "Update Available",
+                        f"A new update is available.\n\nCurrent: {cur}\nLatest: {latest}\n\nDownload and install now?",
+                        QMessageBox.Yes | QMessageBox.No,
+                        QMessageBox.Yes
+                    )
+                    if reply == QMessageBox.Yes:
+                        dialog.accept()
+                        self.download_and_install()
+                else:
+                    QMessageBox.information(dialog, "Up to date", f"No updates available.\nCurrent: {cur}\nLatest: {latest}")
+            except Exception as e:
+                QMessageBox.critical(dialog, "Error", f"Failed to check updates: {e}")
+        check_update_btn.clicked.connect(do_manual_update)
+        update_layout.addWidget(check_update_btn)
+        layout.addWidget(update_group)
         
         # Close button
         close_btn = QPushButton("✅ Close")

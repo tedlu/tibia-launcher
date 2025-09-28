@@ -6,6 +6,7 @@
     "github_username": "example-user",
     "github_repository": "tibia-client", 
     "client_zip_filename": "tibia-client.zip",
+    "auto_install_updates": false,
     
     "enable_auto_update": true,
     "launcher_github_username": "example-user",
