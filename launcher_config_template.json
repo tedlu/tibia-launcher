@@ -21,6 +21,7 @@
     
     "🔄 AUTO-UPDATE LAUNCHER": "Enable this for automatic launcher updates",
     "enable_auto_update": true,
+    "auto_install_launcher_updates": false,
     "launcher_github_username": "YOUR_USERNAME",
     "launcher_github_repository": "tibialauncher",
     "current_launcher_version": "2.0.0",

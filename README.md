@@ -393,3 +393,14 @@ This project is open source - feel free to modify and distribute!
 **🎮 Ready to launch your Tibia server? Get started with the easy config above!**
 **🎮 Ready to launch your Tibia server? Get started with the easy config above!**
 
+---
+
+## 🔄 Launcher Self-Update (Packaged EXE)
+
+- When built with PyInstaller (a packaged EXE), the launcher can automatically update itself.
+- Requirements in your remote `launcher_config.json`:
+   - `enable_auto_update: true`
+   - Provide launcher repo info (`launcher_github_username`, `launcher_github_repository`) so latest release can be discovered, or ensure your config format provides a direct `download_url` via the core logic.
+   - Optional: `auto_install_launcher_updates: true` to install without prompting.
+- Note: When running from source (not frozen), self-update checks are skipped by design.
+

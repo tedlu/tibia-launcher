@@ -339,7 +339,10 @@ class PySide6GamingLauncher(QMainWindow):
         # Initialize launcher core
         self.launcher_core = LauncherCore()
         # Launcher version (used for self-update checks and UI)
-        self.LAUNCHER_VERSION = "1.1"
+        try:
+            self.LAUNCHER_VERSION = self.launcher_core.get_current_launcher_version()
+        except Exception:
+            self.LAUNCHER_VERSION = "1.0.0"
         
         # Set up the UI
         self.setup_ui()
@@ -847,47 +850,52 @@ QTextEdit#log_text {
             return (0,)
 
     def check_launcher_update(self):
-        """Check remote config for a newer launcher EXE and prompt to update."""
+        """Check remote config for a newer launcher EXE and install or prompt accordingly."""
         try:
-            # Avoid in dev mode (not frozen)
+            # Only applicable for packaged builds
             if not getattr(sys, 'frozen', False):
+                self.log_message("ℹ️ Skipping launcher self-update in dev mode (not a packaged EXE).")
                 return
-            from github_downloader import GitHubDownloader
-            gd = GitHubDownloader()
-            cfg = gd.get_remote_config() or {}
-            remote_version = str(cfg.get('launcher_version', '')).strip()
-            if not remote_version:
+
+            # Ask core to determine availability and download URL
+            status = self.launcher_core.check_launcher_update()
+            if not status or not isinstance(status, dict):
                 return
-            if self._parse_version(remote_version) <= self._parse_version(self.LAUNCHER_VERSION):
+            if not status.get('available'):
                 return
-            # Determine download URL
-            download_url = cfg.get('launcher_download_url')
-            if not download_url:
-                tag = cfg.get('launcher_release_tag')
-                asset_name = cfg.get('launcher_asset')
-                if tag and asset_name:
-                    release = gd.get_release_by_tag(tag)
-                    if release and 'assets' in release:
-                        for a in release['assets']:
-                            if a.get('name') == asset_name:
-                                download_url = a.get('browser_download_url')
-                                break
+
+            latest = status.get('latest_version', '')
+            download_url = status.get('download_url')
             if not download_url:
                 return
-            # Prompt on UI thread
-            def prompt():
-                reply = QMessageBox.question(
-                    self,
-                    "Update Launcher",
-                    f"A new launcher version {remote_version} is available. Update now?",
-                    QMessageBox.Yes | QMessageBox.No,
-                    QMessageBox.Yes
-                )
-                if reply == QMessageBox.Yes:
-                    # Call directly on main thread (no more threading)
-                    self.download_and_apply_launcher_update(download_url)
-            # Show prompt directly
-            prompt()
+
+            # Read auto-install flag from remote config
+            cfg = self.launcher_core.get_remote_config() or {}
+            auto_install = False
+            try:
+                val = cfg.get('auto_install_launcher_updates') or cfg.get('auto_update_launcher')
+                if isinstance(val, bool):
+                    auto_install = val
+                elif isinstance(val, str):
+                    auto_install = val.strip().lower() in ("1", "true", "yes", "on")
+            except Exception:
+                auto_install = False
+
+            if auto_install:
+                self.log_message(f"⚙️ Auto-installing new launcher {latest}...")
+                self.download_and_apply_launcher_update(download_url)
+                return
+
+            # Otherwise prompt the user
+            reply = QMessageBox.question(
+                self,
+                "Update Launcher",
+                f"A new launcher version {latest} is available. Update now?",
+                QMessageBox.Yes | QMessageBox.No,
+                QMessageBox.Yes
+            )
+            if reply == QMessageBox.Yes:
+                self.download_and_apply_launcher_update(download_url)
         except Exception as e:
             self.log_message(f"⚠️ Launcher update check error: {e}")
 
@@ -896,55 +904,55 @@ QTextEdit#log_text {
     # Game updates now use main window progress bar directly (no separate dialog)
 
     def download_and_apply_launcher_update(self, url: str):
-        """Download new EXE to .new and replace running EXE using a temporary batch."""
+        """Download the new EXE and replace the running EXE using a temporary batch."""
         try:
             if not getattr(sys, 'frozen', False):
                 self.log_message("ℹ️ Launcher self-update is only available in packaged EXE.")
                 return
-            
-            # Use main window progress bar instead of separate dialog (like game downloads)
+
+            # Prepare UI
             self.update_status("🔄 Preparing launcher update...")
             self.update_progress(0)
             self.log_message("🔄 Starting launcher self-update...")
-            
-            # Disable play button during update
             self.play_btn.setEnabled(False)
-            
-            # Use a simple timer to simulate download progress
-            self._launcher_progress = 0
-            self._launcher_timer = QTimer()
-            self._launcher_timer.timeout.connect(self._simulate_launcher_progress)
-            self._launcher_timer.start(50)  # Update every 50ms for smooth animation
-            
+
+            # Progress mapper for UI
+            def progress_cb(percent: float):
+                try:
+                    # Clamp and update main progress bar
+                    pct = max(0, min(int(percent), 100))
+                    self.update_progress(pct)
+                    self.update_status(f"⬇️ Downloading launcher update... {pct}%")
+                except Exception:
+                    pass
+
+            # Download new launcher
+            temp_path = self.launcher_core.download_launcher_update(url, progress_callback=progress_cb)
+            if not temp_path or not os.path.exists(temp_path):
+                raise Exception("Failed to download launcher update")
+
+            # Apply update (spawns a batch to copy and restart)
+            applied = self.launcher_core.apply_launcher_update(temp_path)
+            if not applied:
+                raise Exception("Failed to apply launcher update")
+
+            # Inform user and exit so the batch can replace the file
+            self.update_status("🔁 Applying launcher update and restarting...")
+            self.log_message("🔁 Applying launcher update and restarting...")
+
+            # Give the UI a brief moment then quit
+            QTimer.singleShot(600, QApplication.instance().quit)
+
         except Exception as e:
             self.log_message(f"❌ Launcher self-update failed: {e}")
             self._restore_launcher_ui()
     
     def _simulate_launcher_progress(self):
-        """Simulate launcher update progress for testing"""
-        self._launcher_progress += 2
-        
-        if self._launcher_progress <= 100:
-            # Update main window progress bar (like game downloads)
-            self.update_progress(self._launcher_progress)
-            self.update_status(f"⬇️ Downloading launcher update... {self._launcher_progress}%")
-            print(f"Simulated launcher progress: {self._launcher_progress}%")
-            
-        elif self._launcher_progress <= 110:
-            # Switch to applying update
-            if self._launcher_progress == 102:  # Only once
-                self.update_progress(0)  # Hide progress bar during apply phase
-                self.update_status("🔁 Applying launcher update...")
-                self.log_message("🔁 Applying launcher update...")
-                
-        else:
-            # Complete simulation
-            self._launcher_timer.stop()
-            self.update_status("✅ Launcher update completed!")
-            self.log_message("✅ Launcher update simulation completed!")
-            self.update_progress(0)  # Hide progress bar
-            self._restore_launcher_ui()
-            print("✅ Launcher update simulation completed")
+        """Deprecated: kept for reference but no longer used (real download now)."""
+        try:
+            self.update_status("ℹ️ Simulation disabled; performing real update when packaged.")
+        except Exception:
+            pass
     
     def _restore_launcher_ui(self):
         """Restore UI after launcher update completion or failure"""
