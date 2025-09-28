@@ -76,6 +76,14 @@ class DragContainer(QWidget):
         self._window = window
         self._dragging = False
         self._drag_offset = None
+        # Preload background artwork for full-frame paint
+        try:
+            bg_path = resource_path('images', 'background-artwork.png')
+            self._bg_pix = QPixmap(bg_path) if os.path.exists(bg_path) else None
+            self._bg_scaled = None
+        except Exception:
+            self._bg_pix = None
+            self._bg_scaled = None
 
     def _is_interactive(self, w: QWidget) -> bool:
         return isinstance(
@@ -121,6 +129,33 @@ class DragContainer(QWidget):
         self._dragging = False
         self._drag_offset = None
         super().mouseReleaseEvent(event)
+
+    def resizeEvent(self, event):
+        # Keep a scaled version of the background matching current size
+        if getattr(self, '_bg_pix', None) and not self._bg_pix.isNull():
+            self._bg_scaled = self._bg_pix.scaled(self.size(), Qt.KeepAspectRatioByExpanding, Qt.SmoothTransformation)
+        super().resizeEvent(event)
+
+    def paintEvent(self, event):
+        # Paint a scaled background image clipped to rounded corners to fully fill the frame
+        if getattr(self, '_bg_scaled', None) and not self._bg_scaled.isNull():
+            try:
+                painter = QPainter(self)
+                painter.setRenderHints(QPainter.Antialiasing | QPainter.SmoothPixmapTransform)
+                # Clip to rounded rect (match stylesheet corner radius)
+                path = QPainterPath()
+                rect = self.rect()
+                path.addRoundedRect(rect.adjusted(0, 0, -1, -1), 16, 16)
+                painter.setClipPath(path)
+                # Center the expanded pixmap
+                x = (rect.width() - self._bg_scaled.width()) // 2
+                y = (rect.height() - self._bg_scaled.height()) // 2
+                painter.drawPixmap(x, y, self._bg_scaled)
+                painter.end()
+            except Exception:
+                pass
+        # Continue normal painting (children/widgets)
+        super().paintEvent(event)
 
 
 class VisualOverlay(QWidget):
@@ -1084,7 +1119,77 @@ QTextEdit#log_text {
                 QMessageBox.critical(dialog, "Error", f"Failed to check updates: {e}")
         check_update_btn.clicked.connect(do_manual_update)
         update_layout.addWidget(check_update_btn)
+
+        # Safety: Force Download + Install (helps if detection breaks)
+        force_btn = QPushButton("🛠 Safety: Download + Install")
+        def do_force_install():
+            reply = QMessageBox.question(
+                dialog,
+                "Force Install",
+                "This will download the latest client and reinstall it.\n\n"
+                "Your protected folders (minimap, conf, characterdata) will be preserved.\n\n"
+                "Proceed?",
+                QMessageBox.Yes | QMessageBox.No,
+                QMessageBox.Yes
+            )
+            if reply == QMessageBox.Yes:
+                dialog.accept()
+                # Kick off download/install regardless of current status
+                try:
+                    self.log_message("🛠 Starting safety download + install...")
+                except Exception:
+                    pass
+                self.download_and_install()
+        force_btn.clicked.connect(do_force_install)
+        update_layout.addWidget(force_btn)
         layout.addWidget(update_group)
+
+        # --- Launcher Update section ---
+        launcher_group = QGroupBox("Launcher Update")
+        launcher_layout = QVBoxLayout(launcher_group)
+        launcher_info = QLabel("Manually check for a new launcher version and install it.\n"
+                               "Note: Available only when running the packaged EXE.")
+        launcher_info.setWordWrap(True)
+        launcher_layout.addWidget(launcher_info)
+
+        check_launcher_btn = QPushButton("🧰 Check for Launcher Update")
+        def do_manual_launcher_update():
+            try:
+                if not getattr(sys, 'frozen', False):
+                    QMessageBox.information(dialog, "Not Packaged",
+                                            "Launcher self-update is only available in the packaged EXE.")
+                    return
+                status = self.launcher_core.check_launcher_update()
+                if not status or not isinstance(status, dict):
+                    QMessageBox.warning(dialog, "Update Check",
+                                        "Could not determine launcher update status.")
+                    return
+                if not status.get('available'):
+                    QMessageBox.information(dialog, "Up to date",
+                                            "No new launcher version available.")
+                    return
+                latest = status.get('latest_version', 'unknown')
+                url = status.get('download_url')
+                if not url:
+                    QMessageBox.warning(dialog, "Update Check",
+                                        "No download URL provided by release.")
+                    return
+                # Prompt to proceed
+                reply = QMessageBox.question(
+                    dialog,
+                    "Update Launcher",
+                    f"A new launcher version {latest} is available.\nInstall now?",
+                    QMessageBox.Yes | QMessageBox.No,
+                    QMessageBox.Yes
+                )
+                if reply == QMessageBox.Yes:
+                    dialog.accept()
+                    self.download_and_apply_launcher_update(url)
+            except Exception as e:
+                QMessageBox.critical(dialog, "Error", f"Failed to check/apply launcher update: {e}")
+        check_launcher_btn.clicked.connect(do_manual_launcher_update)
+        launcher_layout.addWidget(check_launcher_btn)
+        layout.addWidget(launcher_group)
         
         # Close button
         close_btn = QPushButton("✅ Close")
